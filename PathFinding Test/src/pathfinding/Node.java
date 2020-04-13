@@ -39,6 +39,10 @@ public class Node {
 		g.setColor(Color.black);
 		g.draw(r);
 		g.drawString(Integer.toString(id), pos.getX() * Map.TW, pos.getY() * Map.TH);
+				
+	}
+	
+	public void update() {
 	}
 
 	// Getters and Setters

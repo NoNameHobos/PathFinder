@@ -16,45 +16,47 @@ public class PathFinder {
 		ArrayList<Node> closed = new ArrayList<Node>();
 		
 		startNode.setGCost(0);
-		
 		open.add(startNode);
 		Node current = null;
 		
-		System.out.println(getDist(startNode.getPos(), endNode.getPos()));
-		
-		while (!concluded) {
+		while(!concluded) {
 			open.sort(new SortAStar(endNode));
 			current = open.get(0);
-			System.out.println("Count: (" + current.getPos().getX() + ", " + current.getPos().getY() + ")");
-			closed.add(current);
 			open.remove(0);
-			
+			closed.add(current);
 			if(current == endNode)
 				concluded = true;
 			
-			ArrayList<Node> neighbours = getNeighbours(map, current);
-			
-			for(int i = 0; i < neighbours.size(); i++) {
-				Node neighbour = neighbours.get(i);
+			ArrayList<Node> neighbours = getNeighbours(map, current); //Get neighbours
+			for(Node neighbour : neighbours) {
 				
-				neighbour.setHCost(getDist(neighbour.getPos(), endNode.getPos()));
-				
-				if(closed.contains(neighbour)) {
-					neighbours.remove(neighbour);
+				//Check its not in closed
+				if(closed.contains(neighbour))
 					continue;
-				}
 				
-				boolean shorterPath = (current.getGCost() + neighbour.getCost() < neighbour.getGCost());
-				if(shorterPath) System.out.println(shorterPath);
-				if(!open.contains(neighbour) || shorterPath) {
-					neighbour.setGCost(current.getGCost() + neighbour.getCost());
-					neighbour.setFCost();
+				float distBetween = getDist(current.getPos(), neighbour.getPos());
+								
+				if(!open.contains(neighbour)) {
+					neighbour.setGCost(current.getGCost() + distBetween + neighbour.getCost());
+					neighbour.setHCost(getDist(neighbour.getPos(), endNode.getPos()));
+					neighbour.setFCost(neighbour.getGCost() + neighbour.getHCost());
 					neighbour.setParent(current);
 					if(!open.contains(neighbour))
+						open.add(neighbour);
+				} else {
+					float pathToNeighbour = current.getGCost() + (neighbour.getCost() + 1) * distBetween; 
+					if(pathToNeighbour < neighbour.getGCost()) {
+						neighbour.setGCost(current.getGCost() + distBetween + neighbour.getCost());
+						neighbour.setHCost(getDist(neighbour.getPos(), endNode.getPos()));
+						neighbour.setFCost(neighbour.getGCost() + neighbour.getHCost());
+						neighbour.setParent(current);
+						if(!open.contains(neighbour))
 							open.add(neighbour);
+					}
 				}
 			}
 		}
+		
 		ArrayList<Node> path = new ArrayList<Node>();
 		System.out.println("----------------COMPILING PATH--------------------------------");
 		do {
@@ -89,7 +91,6 @@ public class PathFinder {
 		float distX = (float) (Math.abs(p1.getX() - p2.getX()));
 		float distY = (float) (Math.abs(p1.getY() - p2.getY()));
 		float dist2 = (float) (Math.pow(distX, 2) + Math.pow(distY, 2));
-		System.out.println(distX + " " + distY);
 		return (float) (Math.pow(dist2, 0.5));
 	}
 }
@@ -116,12 +117,6 @@ class SortAStar implements Comparator<Node> {
 		} else {
 			return (int) Math.signum(h1 - h2);
 		}
-	}
-
-	private float getDistBetween(Point a, Point b) {
-		float distX = Math.abs(a.getX() - b.getX());
-		float distY = Math.abs(b.getY() - b.getY());
-		return (float) (Math.pow(distX, 2) + Math.pow(distY, 2));
 	}
 
 }
