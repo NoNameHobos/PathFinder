@@ -1,6 +1,7 @@
 package pathfinding;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
@@ -14,7 +15,10 @@ public class Map {
 	private Node[][] nodes;
 	
 	private int mapHeight, mapWidth;
-	private ArrayList<Path> paths;
+	private Path path;
+	
+	private Node startNode;
+	private Node endNode;
 	
 	public Map(ArrayList<String> map) {
 		mapHeight = map.size();
@@ -32,8 +36,10 @@ public class Map {
 				nodes[i][j] = new Node(this, j, i, Integer.parseInt(mD[i][j]));
 			}
 		}
-		PathFinder pf = new PathFinder((mapHeight * mapWidth)*(mapHeight * mapWidth), true);
-		paths = pf.findPath(this, nodes[0][0], nodes[0][mapWidth - 1]);
+		startNode = nodes[1][0];
+		endNode = nodes[1][9];
+		
+		path = PathFinder.findPath(this, startNode, endNode);
 	}
 	
 	public void update(int mapWidth, int mapHeight) {
@@ -48,12 +54,9 @@ public class Map {
 		}
 		
 		g.setColor(Color.orange);
-		for(int i = 0; i < paths.size(); i++) {
-			String str = Integer.toString(i+1) + ". " + Float.toString(paths.get(i).getCost());
-			g.drawString(str, 30, 400 + i * 30);
-		}
+		String str = Float.toString(path.getCost());
+		g.drawString(str, 30, 400);
 		
-		Path path = paths.get(0);
 		if(path != null) {
 			
 			float x = 700;
@@ -72,19 +75,18 @@ public class Map {
 				g.drawString(Integer.toString(n.getId()), x - 50, y + (i + 1) * 24);
 			}
 			
-			int i = 0;
-			g.drawString("Visited", x, y);
-			for(Node n : path.getVisited()) {
-				i++;
-				g.drawString(Integer.toString(n.getId()), x, y + i * 24);
-			}
-			
 			//Render start and finish
 			g.setColor(Color.red);
 			Point start = path.getNode(0).getPos();
 			Point end = path.getFinal().getPos();
 			g.drawOval(start.getX() * TW, start.getY() * TH, TW, TH);
 			g.drawOval(end.getX() * TW, end.getY() * TH, TW, TH);
+			
+			g.setColor(Color.black);
+			Point aStart = startNode.getPos();
+			Point aEnd = endNode.getPos();
+			g.drawOval(aStart.getX() * TW, aStart.getY() * TH, TW, TH);
+			g.drawOval(aEnd.getX() * TW, aEnd.getY() * TH, TW, TH);
 
 		}
 	}

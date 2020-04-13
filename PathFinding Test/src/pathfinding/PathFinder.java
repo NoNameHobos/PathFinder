@@ -1,131 +1,127 @@
 package pathfinding;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.newdawn.slick.geom.Point;
 
 public class PathFinder {
 	
-	private int MAX_SEARCHES;
-	private boolean heuristics;
+	public static Path findPath(Map map, Node startNode, Node endNode) {
 
-	public PathFinder(int maxSearches, boolean heuristics) {
-		MAX_SEARCHES = maxSearches;
-		this.heuristics = heuristics;
-	}
-	
-	public ArrayList<Path> findPath(Map map, Node startNode, Node endNode) {
-		Set<Node> visited = new HashSet<Node>();
-        ArrayList<Path> paths = new ArrayList<Path>();
-        ArrayList<Node> open = new ArrayList<Node>();
-        
-        open.add(startNode);
-        
-        Node currentNode = startNode;
-        Node nextNode;
-        
-        Path currentPath = new Path(startNode);
-        Path finalPath = null;
-        
-	}
-	
-	public Node findNext(Map map, Node current, Node goal, ArrayList<Node> options) {
-		System.out.println(current.getId());
-		if(!options.contains(goal)) {
-			options.sort(new SortAStar(goal, heuristics));
-			return options.get(0);
-		} //Else add the goal
-		else {
-			return goal;
-		}
-	}
+		boolean concluded = false;
 
-	public ArrayList<Node> visitNode(Map map, Node n, Set<Node> visited) {
-		Node[][] nodes = map.getNodes();
+		ArrayList<Node> open = new ArrayList<Node>();
+		ArrayList<Node> closed = new ArrayList<Node>();
 		
-		Set<Node> nearestNodes = new HashSet<Node>();
+		startNode.setGCost(0);
 		
-		for(int i = 0; i < 3; i++) {
-			for(int j = 0; j < 3; j++) {
-				Point currentPos = n.getPos();
+		open.add(startNode);
+		Node current = null;
+		
+		System.out.println(getDist(startNode.getPos(), endNode.getPos()));
+		
+		while (!concluded) {
+			open.sort(new SortAStar(endNode));
+			current = open.get(0);
+			System.out.println("Count: (" + current.getPos().getX() + ", " + current.getPos().getY() + ")");
+			closed.add(current);
+			open.remove(0);
+			
+			if(current == endNode)
+				concluded = true;
+			
+			ArrayList<Node> neighbours = getNeighbours(map, current);
+			
+			for(int i = 0; i < neighbours.size(); i++) {
+				Node neighbour = neighbours.get(i);
 				
-				int x = (int) Math.abs(currentPos.getX() + j - 1);
-				int y = (int) Math.abs(currentPos.getY() + i - 1);
-				if(currentPos.getX() != x || currentPos.getY() != y)
-					if(x < map.getWidth() && y < map.getHeight()) {
-						if(!visited.contains(nodes[y][x]))
-							nearestNodes.add(nodes[y][x]);
-					}
+				neighbour.setHCost(getDist(neighbour.getPos(), endNode.getPos()));
+				
+				if(closed.contains(neighbour)) {
+					neighbours.remove(neighbour);
+					continue;
+				}
+				
+				boolean shorterPath = (current.getGCost() + neighbour.getCost() < neighbour.getGCost());
+				if(shorterPath) System.out.println(shorterPath);
+				if(!open.contains(neighbour) || shorterPath) {
+					neighbour.setGCost(current.getGCost() + neighbour.getCost());
+					neighbour.setFCost();
+					neighbour.setParent(current);
+					if(!open.contains(neighbour))
+							open.add(neighbour);
+				}
 			}
 		}
-		
-		Object[] oArray = nearestNodes.toArray();
-		ArrayList<Node> nodeList = new ArrayList<Node>();
-		
-		for(int i = 0; i < oArray.length; i++) {
-			nodeList.add((Node) oArray[i]);
-		}
-		
-		return nodeList;
+		ArrayList<Node> path = new ArrayList<Node>();
+		System.out.println("----------------COMPILING PATH--------------------------------");
+		do {
+			path.add(current);
+			current = current.getParent();
+			System.out.println("Added " + current.getId() + " to path");
+		} while(current != startNode);
+		Collections.reverse(path);
+		return new Path(path);
 	}
 
-	public static Path idealPath(ArrayList<Path> paths) {
-		Path currentPath = null;
-		for(Path path : paths) {
-			if(currentPath == null || path.getCost() < currentPath.getCost())
-				currentPath = path;
+	public static ArrayList<Node> getNeighbours(Map m, Node n) {
+		ArrayList<Node> neighbours = new ArrayList<Node>();
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				int x = (int)n.getPos().getX() + 1 - i;
+				int y = (int)n.getPos().getY() + 1 - j;
+				if(x < 0) x = 0;
+				if(y < 0) y = 0;
+				if(x > m.getWidth() - 1) x = m.getWidth() - 1;
+				if(y > m.getHeight() - 1) y = m.getHeight() - 1;
+				
+				if(x != 0 || y != 0) {
+					neighbours.add(m.getNodes()[y][x]);
+				}
+			}
 		}
-		return currentPath;
+		return neighbours;
 	}
 
-	public float getDist(Point p1, Point p2) {
-		float distX = (float)(Math.abs(p1.getX() - p2.getX()));
-		float distY = (float)(Math.abs(p1.getY() - p2.getY()));
-		float dist2 = (float)(Math.pow(distX, 2) + Math.pow(distY, 2));
-		return (float)(Math.pow(dist2, 1/2));
+	public static float getDist(Point p1, Point p2) {
+		float distX = (float) (Math.abs(p1.getX() - p2.getX()));
+		float distY = (float) (Math.abs(p1.getY() - p2.getY()));
+		float dist2 = (float) (Math.pow(distX, 2) + Math.pow(distY, 2));
+		System.out.println(distX + " " + distY);
+		return (float) (Math.pow(dist2, 0.5));
 	}
 }
 
 class SortAStar implements Comparator<Node> {
 
 	private Node goal;
-	
-	private boolean useHeuristic = false;
 
-	public SortAStar(Node g, boolean useHeuristic) {
-		goal = g;
-		this.useHeuristic = useHeuristic;
-	}
-	
 	public SortAStar(Node g) {
 		goal = g;
 	}
-	
 	public int compare(Node n1, Node n2) {
-		float h1 = getDistBetween(n1.getPos(), goal.getPos());
-		float h2 = getDistBetween(n2.getPos(), goal.getPos());
-		
-		float g1 = n1.getPathCost();
-		float g2 = n2.getPathCost();
+		float h1 = n1.getHCost();
+		float h2 = n2.getHCost();
+
+		float g1 = n1.getGCost();
+		float g2 = n2.getGCost();
+
+		float f1 = h1 + g1;
+		float f2 = h2 + g2;
+
+		if (f1 != f2) {
+			return (int) Math.signum(f1 - f2);
+		} else {
+			return (int) Math.signum(h1 - h2);
+		}
 	}
-	
+
 	private float getDistBetween(Point a, Point b) {
 		float distX = Math.abs(a.getX() - b.getX());
 		float distY = Math.abs(b.getY() - b.getY());
-		return (float)(Math.pow(distX, 2) + Math.pow(distY, 2));
+		return (float) (Math.pow(distX, 2) + Math.pow(distY, 2));
 	}
-	
-}
 
-class SortLowCost implements Comparator<Path> {
-	public int compare(Path p1, Path p2) {
-		if(p1.getCost() != p2.getCost()) {
-		if(p1.getCost() < p2.getCost())
-			return -1;
-		else return 1;
-		} else return 0;
-	}
 }

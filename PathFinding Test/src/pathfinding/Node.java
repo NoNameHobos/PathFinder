@@ -19,7 +19,7 @@ public class Node {
 	
 	private Node parent;
 	
-	private int pathCost = (int)Math.pow(32, 2);
+	private float FCost, GCost, HCost;
 	
 	public Node(Map map, int x, int y, int cost) {
 		pos = new Point(x, y);
@@ -27,14 +27,6 @@ public class Node {
 		this.map = map;
 		id = x + map.getHeight() * y;
 		parent = null;
-	}
-	
-	public Node(Map map, Node parent, int x, int y, int cost) {
-		pos = new Point(x, y);
-		this.cost = cost;
-		this.map = map;
-		id = x + map.getHeight() * y;
-		this.parent = parent;
 	}
 
 	public void render(Graphics g) {
@@ -57,20 +49,49 @@ public class Node {
 	public void setPos(Point pos) {
 		this.pos = pos;
 	}
+	
+	public Node getParent() {
+		return parent;
+	}
+
+	public void setParent(Node parent) {
+		this.parent = parent;
+	}
+
+	public float getFCost() {
+		return FCost;
+	}
+
+	public void setFCost(float fCost) {
+		FCost = fCost;
+	}
+	
+	public void setFCost() {
+		FCost = GCost + HCost;
+	}
+
+	public float getGCost() {
+		return GCost;
+	}
+
+	public void setGCost(float gCost) {
+		GCost = gCost;
+	}
+
+	public float getHCost() {
+		return HCost;
+	}
+
+	public void setHCost(float f) {
+		HCost = f;
+	}
+
+	public int getId() {
+		return id;
+	}
 
 	public int getCost() {
 		return cost;
-	}
-	
-	public int getPathCost() {
-		return pathCost;
-	}
-
-	public void setCost(int cost) {
-		this.cost = cost;
-	}
-	public int getId() {
-		return id;
 	}
 
 }
