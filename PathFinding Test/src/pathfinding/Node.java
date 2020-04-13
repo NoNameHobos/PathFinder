@@ -17,17 +17,24 @@ public class Node {
 
 	private int id;
 	
+	private Node parent;
+	
+	private int pathCost = (int)Math.pow(32, 2);
+	
 	public Node(Map map, int x, int y, int cost) {
 		pos = new Point(x, y);
 		this.cost = cost;
 		this.map = map;
 		id = x + map.getHeight() * y;
+		parent = null;
 	}
-	public Node(Map map, int x, int y, int cost, int id) {
+	
+	public Node(Map map, Node parent, int x, int y, int cost) {
 		pos = new Point(x, y);
 		this.cost = cost;
 		this.map = map;
-		this.id = id;
+		id = x + map.getHeight() * y;
+		this.parent = parent;
 	}
 
 	public void render(Graphics g) {
@@ -53,6 +60,10 @@ public class Node {
 
 	public int getCost() {
 		return cost;
+	}
+	
+	public int getPathCost() {
+		return pathCost;
 	}
 
 	public void setCost(int cost) {

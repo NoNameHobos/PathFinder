@@ -20,72 +20,16 @@ public class PathFinder {
 	public ArrayList<Path> findPath(Map map, Node startNode, Node endNode) {
 		Set<Node> visited = new HashSet<Node>();
         ArrayList<Path> paths = new ArrayList<Path>();
+        ArrayList<Node> open = new ArrayList<Node>();
+        
+        open.add(startNode);
         
         Node currentNode = startNode;
         Node nextNode;
         
         Path currentPath = new Path(startNode);
         Path finalPath = null;
-        float bestPathCost = -1;
-        int searches = 0;
         
-        while(finalPath == null) {
-        	visited.add(currentNode);
-        	ArrayList<Node> options = visitNode(map, currentNode, visited);
-        	if(currentNode == startNode) {
-        		if(options.size() == 0) {
-            		System.out.println(paths.toString());
-            		finalPath = idealPath(paths);
-            		finalPath.setVisited(visited);
-        		}
-        	}
-        	if(options.size() > 0) {
-	        	nextNode = findNext(map, currentNode, endNode, options);
-	        	currentPath.addNode(nextNode);
-	        	
-	        	//Update cost
-	        	float dist = getDist(currentNode.getPos(), nextNode.getPos());
-	        	float h = 0;
-	        	if(heuristics)
-	        		h = nextNode.getCost();
-	        	float f = dist + h;
-	        	currentPath.setCost(currentPath.getCost() + f);
-	        	
-	        	if(nextNode == endNode) {
-	        		//Start looking for a new path
-	        		if(bestPathCost == -1) {
-	        			if(currentPath.getFinal() == endNode) {
-		        			bestPathCost = currentPath.getCost();
-		        			currentPath.setVisited(visited);
-		        			paths.add(currentPath);
-	        			}
-	        		}
-	        		else if(currentPath.getCost() < bestPathCost) {
-	        			if(currentPath.getFinal() == endNode) {
-		        			bestPathCost = currentPath.getCost();
-		        			currentPath.setVisited(visited);
-			        		paths.add(currentPath);
-	        			}
-	        		}
-	        		currentPath = new Path(startNode);
-	        		currentNode = startNode;
-	        	} else currentNode = nextNode;
-        	} else {
-        		if(bestPathCost == -1)
-        			bestPathCost = currentPath.getCost();
-        		else if(currentPath.getCost() < bestPathCost) {
-        			if(currentPath.getFinal() == endNode) {
-	        			bestPathCost = currentPath.getCost();
-	        			currentPath.setVisited(visited);
-		        		paths.add(currentPath);
-        			}
-        		}
-        		currentPath = new Path(startNode);
-        		currentNode = startNode;
-        	}
-        }
-        paths.sort(new SortLowCost());
-        return paths;
 	}
 	
 	public Node findNext(Map map, Node current, Node goal, ArrayList<Node> options) {
@@ -147,41 +91,25 @@ public class PathFinder {
 
 class SortAStar implements Comparator<Node> {
 
-	private Point goal;
+	private Node goal;
 	
 	private boolean useHeuristic = false;
 
 	public SortAStar(Node g, boolean useHeuristic) {
-		goal = new Point(g.getPos().getX() * Map.TW, g.getPos().getY() * Map.TH);
+		goal = g;
 		this.useHeuristic = useHeuristic;
 	}
 	
 	public SortAStar(Node g) {
-		goal = new Point(g.getPos().getX() * Map.TW, g.getPos().getY() * Map.TH);
+		goal = g;
 	}
 	
 	public int compare(Node n1, Node n2) {
-		//f = g + h
-		Point p1 = new Point(n1.getPos().getX() * Map.TW, n1.getPos().getY() * Map.TH);
-		Point p2 = new Point(n2.getPos().getX() * Map.TW, n2.getPos().getY() * Map.TH);
-		float gN1 = getDistBetween(p1, goal); //Floor for underestimation, this is a heuristic
-		float gN2 = getDistBetween(p2, goal); //Floor for underestimation, this is a heuristic
-
-		float hN1 = 0, hN2 = 0;
-		if(useHeuristic) {
-		hN1 = n1.getCost();
-		hN2 = n2.getCost();
-		}
+		float h1 = getDistBetween(n1.getPos(), goal.getPos());
+		float h2 = getDistBetween(n2.getPos(), goal.getPos());
 		
-		float f1 = gN1 + hN1;
-		float f2 = gN2 + hN2;
-		//Sort by smallest f
-		if(f1 != f2) {
-			if(f1 < f2)
-				return -1;
-			else
-				return 1;
-		} else return 0;
+		float g1 = n1.getPathCost();
+		float g2 = n2.getPathCost();
 	}
 	
 	private float getDistBetween(Point a, Point b) {
