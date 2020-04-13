@@ -70,18 +70,41 @@ public class PathFinder {
 
 	public static ArrayList<Node> getNeighbours(Map m, Node n) {
 		ArrayList<Node> neighbours = new ArrayList<Node>();
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
-				int x = (int)n.getPos().getX() + 1 - i;
-				int y = (int)n.getPos().getY() + 1 - j;
+		for (int i = -1; i < 2; i++) {
+			for (int j = -1; j < 2; j++) {
+				int x = (int)n.getPos().getX() + i;
+				int y = (int)n.getPos().getY() + j;
 				if(x < 0) x = 0;
 				if(y < 0) y = 0;
 				if(x > m.getWidth() - 1) x = m.getWidth() - 1;
 				if(y > m.getHeight() - 1) y = m.getHeight() - 1;
 				
-				if(x != 0 || y != 0) {
+				if(i != 0 || j != 0) {
+					
+					
+					if (i != 0 && j != 0) {
+					
+						if (m.getNodes()[(int)n.getPos().getY()][x].getCost() >= 100) {
+							
+							break;
+							
+						}
+						
+						if (m.getNodes()[y][(int)n.getPos().getX()].getCost() >= 100) {
+							
+							break;
+							
+						}
+					
+					}
+					
+					
 					neighbours.add(m.getNodes()[y][x]);
 				}
+				
+				
+				
+				
 			}
 		}
 		return neighbours;
