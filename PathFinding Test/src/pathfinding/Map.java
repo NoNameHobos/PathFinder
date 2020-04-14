@@ -39,7 +39,7 @@ public class Map {
 
 		Random r = new Random();
 
-		startNode = nodes[0][0];
+		startNode = nodes[r.nextInt(mapHeight - 1)][0];
 		endNode = nodes[r.nextInt(mapHeight - 1)][mapWidth/2 - 1];
 
 		path = PathFinder.findPath(this, startNode, endNode);
