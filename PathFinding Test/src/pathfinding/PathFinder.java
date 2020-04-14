@@ -1,4 +1,4 @@
-package pathfinding;
+package main.entities.ai.pathfinding;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import org.newdawn.slick.geom.Point;
 
 public class PathFinder {
 	
-	public static Path findPath(Map map, Node startNode, Node endNode) {
+	public static Path findPath(NodeMap map, Node startNode, Node endNode) {
 
 		boolean concluded = false;
 
@@ -20,7 +20,7 @@ public class PathFinder {
 		Node current = null;
 		
 		while(!concluded) {
-			open.sort(new SortAStar(endNode));
+			open.sort(new SortAStar());
 			current = open.get(0);
 			open.remove(0);
 			closed.add(current);
@@ -58,17 +58,16 @@ public class PathFinder {
 		}
 		
 		ArrayList<Node> path = new ArrayList<Node>();
-		System.out.println("----------------COMPILING PATH--------------------------------");
+
 		do {
 			path.add(current);
 			current = current.getParent();
-			System.out.println("Added " + current.getId() + " to path");
 		} while(current != startNode);
 		Collections.reverse(path);
 		return new Path(path);
 	}
 
-	public static ArrayList<Node> getNeighbours(Map m, Node n) {
+	public static ArrayList<Node> getNeighbours(NodeMap m, Node n) {
 		ArrayList<Node> neighbours = new ArrayList<Node>();
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
@@ -80,31 +79,13 @@ public class PathFinder {
 				if(y > m.getHeight() - 1) y = m.getHeight() - 1;
 				
 				if(i != 0 || j != 0) {
-					
-					
+					boolean cornerObst = false;
 					if (i != 0 && j != 0) {
-					
-						if (m.getNodes()[(int)n.getPos().getY()][x].getCost() >= 100) {
-							
-							break;
-							
-						}
-						
-						if (m.getNodes()[y][(int)n.getPos().getX()].getCost() >= 100) {
-							
-							break;
-							
-						}
-					
+						cornerObst = (m.getNodes()[(int)n.getPos().getY()][x].getCost() >= 100) ||
+								(m.getNodes()[y][(int)n.getPos().getX()].getCost() >= 100);
 					}
-					
-					
-					neighbours.add(m.getNodes()[y][x]);
+					if(!cornerObst) neighbours.add(m.getNodes()[y][x]);
 				}
-				
-				
-				
-				
 			}
 		}
 		return neighbours;
@@ -120,11 +101,6 @@ public class PathFinder {
 
 class SortAStar implements Comparator<Node> {
 
-	private Node goal;
-
-	public SortAStar(Node g) {
-		goal = g;
-	}
 	public int compare(Node n1, Node n2) {
 		float h1 = n1.getHCost();
 		float h2 = n2.getHCost();
