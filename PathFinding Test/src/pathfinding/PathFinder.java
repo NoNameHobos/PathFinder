@@ -1,4 +1,4 @@
-package main.entities.ai.pathfinding;
+package pathfinding;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import org.newdawn.slick.geom.Point;
 
 public class PathFinder {
 	
-	public static Path findPath(NodeMap map, Node startNode, Node endNode) {
+	public static Path findPath(Map map, Node startNode, Node endNode) {
 
 		boolean concluded = false;
 
@@ -67,7 +67,7 @@ public class PathFinder {
 		return new Path(path);
 	}
 
-	public static ArrayList<Node> getNeighbours(NodeMap m, Node n) {
+	public static ArrayList<Node> getNeighbours(Map m, Node n) {
 		ArrayList<Node> neighbours = new ArrayList<Node>();
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
